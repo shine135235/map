@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>自定义地图类型</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.1&key=822bdd46505b404e0e15dc200242e4c3"></script>
+<script type="text/javascript" src="js/jquery-1.7.2.min.js" ></script>
+<style>
+	.BMap_cpyCtrl  
+    {  
+        display:none;   
+    }  
+    .anchorBL{  
+        display:none;   
+    }  
+</style>
+</head>
+<body>
+<div id="map" style="height: 800px;"></div>
+<script type="text/javascript">
+
+var tileLayer = new AMap.TileLayer({
+	zIndex:100,
+	getTileUrl:function(x,y,z){
+		console.log(x)
+	  return 'tiles/' + z + '/tile' + x + '_' + y + '.png';
+	}
+});
+
+var map = new AMap.Map('map', {
+        resizeEnable: true,
+        zoom:18,
+        center: [113.883168,34.017072]
+});
+tileLayer.setMap(map)
+</script>
+</body>
+</html>

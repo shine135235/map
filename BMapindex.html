@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>自定义地图类型</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=1.2"></script>
+<script type="text/javascript" src="js/jquery-1.7.2.min.js" ></script>
+<style>
+	.BMap_cpyCtrl  
+    {  
+        display:none;   
+    }  
+    .anchorBL{  
+        display:none;   
+    }  
+</style>
+</head>
+<body>
+<div id="map" style="height: 800px;"></div>
+<script type="text/javascript">
+var tileLayer = new BMap.TileLayer({
+	zIndex:1
+});
+tileLayer.getTilesUrl = function(tileCoord, zoom) {
+    var x = tileCoord.x;
+    var y = tileCoord.y;
+    return 'tiles/' + zoom + '/tile' + x + '_' + y + '.png';
+}
+var MyMap = new BMap.MapType('MyMap', tileLayer, {minZoom: 1, maxZoom: 5});
+var map = new BMap.Map('map', {mapType: MyMap});
+map.enableScrollWheelZoom();  
+map.centerAndZoom(new BMap.Point(113.889561, 34.023394), 3);
+var polygon=null,dataInfo=[];
+
+	function addPolygon(name,area,point,data){ 
+		//var polygon=new BMap.Polygon(point,{fillColor:color,strokeColor:"red", strokeWeight:0.1, fillOpacity:1});
+		var opts = {
+				width : 250,     // 信息窗口宽度
+				height: 180,     // 信息窗口高度
+				title :"这里是<b>"+name+"</b>，这里有" , // 信息窗口标题
+				enableMessage:true//设置允许信息窗发送短息
+			   };
+		map.addOverlay(area);
+		area.addEventListener("click",function(e){
+			var content="";
+			for(var i=0;i<data.length;i++){
+				content+="<b>"+data[i].type+"</b>　<b>"+data[i].name+"</b>　其实它是一只强力的<b>"+data[i].info+"</b><br />";
+			}
+			  var infoWindow = new BMap.InfoWindow(content,opts);
+			  map.openInfoWindow(infoWindow,point)
+		});
+		polygon=null;
+		dataInfo=[];
+	}
+    function addMarker(point,name,data){
+    var marker=new BMap.Marker(point);
+    map.addOverlay(marker);
+//  var label=new BMap.Label(name);
+//  marker.setLabel(label);
+    marker.addEventListener("click",function(e){
+    	  
+    })
+    }
+  
+    $(document).ready(function(){
+    	$.ajax({
+				type:"get",
+				url:"data.json",
+				async:false,
+				cache:false,
+				success:function(data){
+				  var areaPoints=[];
+				  var colors=["#ee6a71","#2b99fa","#37bd97","#ffa665"]
+                  for(var i=0;i<data.builds.length;i++){
+                  	for(var l=0;l<data.builds[i].areaPoint.length;l++){
+                  	areaPoints.push(new BMap.Point(data.builds[i].areaPoint[l].lng,data.builds[i].areaPoint[l].lat))
+                  	}
+                  	  //在循环体内创建建筑区域,方便为每个区域固定数据及事件
+                  	  polygon=new BMap.Polygon(areaPoints,{fillColor:colors[Math.floor(Math.random()*4)],strokeColor:"red", strokeWeight:0.1, fillOpacity:1});
+                  	  addMarker(new BMap.Point(data.builds[i].MarkerPoint.lng,data.builds[i].MarkerPoint.lat),data.builds[i].name);
+                  	  //区域名称(也就是建筑名称)  区域       信息窗口的位置    信息窗的内容
+	                  addPolygon(data.builds[i].name,polygon,new BMap.Point(data.builds[i].MarkerPoint.lng,data.builds[i].MarkerPoint.lat),data.builds[i].data);
+	                  areaPoints=[];
+                  }
+				}
+			});
+    })
+</script>
+</body>
+</html>
